@@ -12,7 +12,7 @@ private:
 public:
     vector<int> i_num;
     //vector<char> c_num;
-    Multer *m;
+    //Multer *m;
 
 
 public:

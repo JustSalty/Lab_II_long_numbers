@@ -220,11 +220,49 @@ vector<int> get_modulo(vector<int> a, const vector<int>& b) // returns a mod b =
     return a;
 }
 
+vector<int> get_modulo_int(vector<int> a, const int& b) // returns a mod b = a % b
+{
+    vector<int> b0;
+    make_vector(b0, b);
+    cut_zeroes(a);
+    cut_zeroes(b0);
+    if (b0.size() == 0) throw("\n Division by zero vector! \n");
+    if (a.size() == 0) {a.emplace_back(0); return a;}
+    while (compare_vectors(a, b0) == 1) {
+        a = subtract__vectors(a, b0);
+    }
+    return a;
+}
+
+bool get_mod_two(const vector<int>& a)
+{
+    if (a.size() == 0) return true;
+    return (a[0] % 2);
+}
+
 void increase_by_one(vector<int>& a)
 {
     vector<int> one{1};
     if (a.size() == 0) a = one; else
     a = add_vectors(a, one);
+}
+
+vector<int> multiply_by_digit(vector<int> a, const int& k)
+{
+    vector<int> res{0};
+    if (a.size() == 0 || k == 0) {return res;}
+    if (k == 1) return a;
+    if (k >= 9 || k < 0) throw("\n Not a digit passed!\n"); // 9 = 10 - 1 = sys -1 as k < sys
+    res.resize(0);
+    int len = a.size(), i = 0, b = 0;
+    while (i < len) {
+        b += a[i] * k;
+        res.emplace_back(b % sys);
+        b = (b - res[i]) / sys;
+        ++i;
+    }
+    if (b != 0) res.emplace_back(b);
+    return res;
 }
 
 

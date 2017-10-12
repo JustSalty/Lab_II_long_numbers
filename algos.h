@@ -276,22 +276,99 @@ vector<int> shtrassen(vector<int> a, vector<int> b)
 }
 
 
-bool lemers_luke_test(vector<int> a)
+bool lemers_luke(vector<int> a)
 {
     if (a.size() == 0) throw("\n Empty vector!\n");
     if (a[0] % 2 == 0) throw("\n Even number passed as an argument!\n");
     vector<int> k{1}, s{4}, m{2};
-    while (compare_vectors(k, a) != 0) {m = karatsuba_algo(m, two); increase_by_one(k);}
-    k = {1};
+    //int k = 1, s = 4;
+    while (compare_vectors(k, a) != 0) {m = multiply_by_digit(m, 2); increase_by_one(k);}
+
+    k = one; // k = 1;
     m = subtract_vectors(m, k);
     while (compare_vectors(k, subtract_vectors(s, one)) != 0)
     {
         s = get_modulo(subtract_vectors(get_squared(s), two), m);
         increase_by_one(k);
     }
+
+    /*  // for k - a long number, k is the power
+    k = one;
+    m = subtract_vectors(m, k);
+    while (compare_vectors(k, subtract_vectors(s, one)) != 0)
+    {
+        s = get_modulo(subtract_vectors(get_squared(s), two), m);
+        increase_by_one(k);
+    }
+    */
+
     cut_zeroes(s);
     if (s.size() == 0) return true; // is prime
     return false; //is complex
+}
+
+bool lemers_luke_int(int a)
+{
+    //if (a.size() == 0) throw("\n Empty vector!\n");
+    if (a % 2 == 0) throw("\n Even number passed as an argument!\n");
+    long long k = 1, s = 4, m = 2;
+    while (k != a) {m *= 2; ++k;}
+    k = 1;
+    m -= k;
+    while (k != s - 1)
+    {
+        //s = get_modulo(subtract_vectors(get_squared(s), two), m);
+        s = (s * s - 2) % m;
+        ++k;
+    }
+    if (s == 0) return true; // is prime // cout<<"prime";
+    return false; //is complex // cout<<"";
+}
+
+
+bool miller_rabin(vector<int> n)
+{
+    if (n.size() == 0) throw("\n Empty vector!\n");
+    if (n[0] % 2 == 0) throw("\n Even number passed as an argument!\n");
+    vector<int> t = n, n_min_one = subtract_vectors(n, one);
+    t = subtract_vectors(t, one);
+    int s=0; // vector<int> s{0};
+    while(get_mod_two(t) == 0) {
+        divide_vectors(t, two);
+        s++; // increase_by_one(s);
+    }
+
+    while (true) {  // <- cycle A
+        int a;
+        //a = rand(2, n-2);
+        vector<int> x;
+        make_vector(x, a);// for a - vector x = a;
+
+        vector<int> k{0};
+        while (compare_vectors(k, t)) != 0) // x = a^t
+        {
+            x = karatsuba_algo(x, a);
+            increase_by_one(k);
+        }
+        x = get_modulo(x, n);  // this cycle - x = a^t mod n
+
+        if (compare_vectors(x, one) == 0 || compare_vectors(x, n_min_one) == 0) break;
+        for (int i = 0; i <= s; ++i) // k = one; while (compare_vectors(k, s) <- cycle B
+        {
+            x = get_modulo(get_squared(x), n);
+            if (compare_vectors(x, one) == 0) return true; // is complex
+            if (compare_vectors(x, n_min_one) == 0) break; // go to next iteration of cycle B
+        }
+        return true; // complex
+
+    }
+    return false; // possibly prime
+}
+
+
+bool solov_shtrassen(vector<int> a)
+{
+    return true;//is prime
 }
 
 

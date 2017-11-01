@@ -3,6 +3,7 @@
 
 #include "help_hand.h"
 #include "longs.h"
+//#include "float_long.h"
 
 const vector<int> one{1}, two{2};
 
@@ -224,11 +225,11 @@ vector<int> shtrassen(vector<int> a, vector<int> b)
 	fa.resize (n),  fb.resize (n);
 	*/
 
-	fa = fft(fa, false);
-	fb = fft(fb, false);
+	fft(fa, false); ///fa = fft(fa, false);
+	fft(fb, false); ///fb = fft(fb, false);
 	for (int i=0; i < n; ++i)
 		fa[i] *= fb[i];
-	fa = fft(fa, true);
+	fft(fa, true); ///fa = fft(fa, true);
 
     vector<int> res;
 	res.resize (n);
@@ -276,26 +277,28 @@ vector<int> shtrassen(vector<int> a, vector<int> b)
 }
 
 
-bool lemers_luke(vector<int> a)
+bool lemers_luke(vector<int> p)
 {
-    if (a.size() == 0) throw("\n Empty vector!\n");
-    if (a[0] % 2 == 0) throw("\n Even number passed as an argument!\n");
+    if (p.size() == 0) throw("\n Empty vector!\n");
+    if (p[0] % 2 == 0) throw("\n Even number passed as an argument!\n");
     vector<int> k{1}, s{4}, m{2};
     //int k = 1, s = 4;
-    while (compare_vectors(k, a) != 0) {m = multiply_by_digit(m, 2); increase_by_one(k);}
+    //m = binary_pow_vect(m, p); or
+    while (compare_vectors(k, p) != 0) {m = multiply_by_digit(m, 2); increase_by_one(k);}
 
     k = one; // k = 1;
-    m = subtract_vectors(m, k);
-    while (compare_vectors(k, subtract_vectors(s, one)) != 0)
+    m = subtract_vectors(m, one);
+    while (compare_vectors(k, subtract_vectors(p, one)) != 0)
     {
-        s = get_modulo(subtract_vectors(get_squared(s), two), m);
+        s = subtract_vectors( get_modulo(get_squared(s), m), two);
+        //or s = get_modulo(subtract_vectors(get_squared(s), two), m);
         increase_by_one(k);
     }
 
     /*  // for k - a long number, k is the power
     k = one;
-    m = subtract_vectors(m, k);
-    while (compare_vectors(k, subtract_vectors(s, one)) != 0)
+    m = subtract_vectors(m, one);
+    while (compare_vectors(k, subtract_vectors(p, one)) != 0)
     {
         s = get_modulo(subtract_vectors(get_squared(s), two), m);
         increase_by_one(k);
@@ -307,15 +310,16 @@ bool lemers_luke(vector<int> a)
     return false; //is complex
 }
 
-bool lemers_luke_int(int a)
+bool lemers_luke_int(int p)
 {
-    //if (a.size() == 0) throw("\n Empty vector!\n");
-    if (a % 2 == 0) throw("\n Even number passed as an argument!\n");
+    //if (p.size() == 0) throw("\n Empty vector!\n");
+    if (p % 2 == 0) throw("\n Even number passed as an argument!\n");
     long long k = 1, s = 4, m = 2;
-    while (k != a) {m *= 2; ++k;}
+    while (k != p) {m *= 2; ++k;}
+
+    m--;
     k = 1;
-    m -= k;
-    while (k != s - 1)
+    while (k != p - 1)
     {
         //s = get_modulo(subtract_vectors(get_squared(s), two), m);
         s = (s * s - 2) % m;
@@ -326,49 +330,44 @@ bool lemers_luke_int(int a)
 }
 
 
-bool miller_rabin(vector<int> n)
+bool miller_rabin(vector<int> n, int k)
 {
     if (n.size() == 0) throw("\n Empty vector!\n");
     if (n[0] % 2 == 0) throw("\n Even number passed as an argument!\n");
-    vector<int> t = n, n_min_one = subtract_vectors(n, one);
-    t = subtract_vectors(t, one);
-    int s=0; // vector<int> s{0};
+
+    vector<int> n_min_one = subtract_vectors(n, one), t = n_min_one;
+    int s=0; // vector<int> s{0}; s is the power of two in n-1
     while(get_mod_two(t) == 0) {
         divide_vectors(t, two);
         s++; // increase_by_one(s);
     }
 
-    while (true) {  // <- cycle A
-        int a;
-        //a = rand(2, n-2);
-        vector<int> x;
-        make_vector(x, a);// for a - vector x = a;
+    for (int i = 0; i < k; ++i) {  // <- cycle A - repeat k times
+        int a0; //a0 = rand(2, n-2);
+        vector<int> a;
+        make_vector(a, a0);
+        vector<int> x = a;
 
-        vector<int> k{0};
-        while (compare_vectors(k, t)) != 0) // x = a^t
+        vector<int> j{0};
+        while (compare_vectors(j, t) != 0) // x = a^t
         {
             x = karatsuba_algo(x, a);
-            increase_by_one(k);
+            x = get_modulo(x, n);
+            increase_by_one(j);
         }
-        x = get_modulo(x, n);  // this cycle - x = a^t mod n
+        //x = get_modulo(x, n);  // this cycle - x = a^t mod n
 
-        if (compare_vectors(x, one) == 0 || compare_vectors(x, n_min_one) == 0) break;
-        for (int i = 0; i <= s; ++i) // k = one; while (compare_vectors(k, s) <- cycle B
+        if (compare_vectors(x, one) == 0 || compare_vectors(x, n_min_one) == 0) break;// go to next A iteration
+        for (int l = 0; l < s-1; ++l) // k = one; while (compare_vectors(k, s) <- cycle B
         {
             x = get_modulo(get_squared(x), n);
             if (compare_vectors(x, one) == 0) return true; // is complex
-            if (compare_vectors(x, n_min_one) == 0) break; // go to next iteration of cycle B
+            if (compare_vectors(x, n_min_one) == 0) break; // go to next iteration of cycle A
         }
         return true; // complex
 
     }
     return false; // possibly prime
-}
-
-
-bool solov_shtrassen(vector<int> a)
-{
-    return true;//is prime
 }
 
 

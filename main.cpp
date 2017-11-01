@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <windows.h>
-#include "longs_fin.h"
+//#include "longs_fin.h"
+#include "float_long.h"
+#include "binary_algos.h"
 
 //#include <iostream>
 //#include <vector>
@@ -13,6 +15,28 @@ using namespace std;
 int main00()
 {
 
+    //**
+    FloatLong a(2.1, 2), b(1.5, 1), c(1.0, 0);
+    a.print();
+    b.print();
+    FloatLong d0({2,1,0},1);
+    c.print();
+    d0.print();
+
+    FloatLong d = a + b; ///e = b + c, f = b - c, g = a - c, a0(2), h = b * a0;
+    ///printf("\n %s + %s = %s ", std::string(a).c_str(), std::string(b).c_str(), std::string(d).c_str());
+    ///cout<<"\n "<<string(a)<<" + "<<string(b)<<" = "<<string(d);
+
+    //**/
+
+    /** FloatLong tests for constructors
+    vector<int> a{2,1,0}, b{0,1}, c{1,0};
+    FloatLong a1(a,b), b1(a,c);
+    a1.print();
+    b1.print();
+    **/
+
+
     /* //multiply vector by digit function test
     int a = 2;
     vector<int> b{9,5}, c = multiply_by_digit(b, a);
@@ -24,11 +48,11 @@ int main00()
     */
 
 
-    // // luke-lemers test
-    vector<int> a{3};
+    /* // luke-lemers test
+    vector<int> a{7};
     bool b = lemers_luke(a);
     if (b) cout<<"\n Prime!\n"; else cout<<"\n Complex!\n";
-    //
+    */
 
     /* // division and modulo test
     vector<int> ar1{0,0,0,1}; print_vector(ar1); cout<<endl;
@@ -37,12 +61,12 @@ int main00()
     ar3 = get_modulo(ar1, ar2); print_vector(ar3); cout<<endl;
     */
 
-    /* // shtrassen test
-    vector<int> n1{1,1}, n2{1,1};
+    /** /// shtrassen test
+    vector<int> n1{1,1}, n2{1,2};
     vector<int> n = shtrassen(n1, n2); cout<<endl;
     //cut_zeroes(n);
     print_vector(n); cout<<endl;
-    */
+    **/
 
     /* // split function test
     int n = 2;

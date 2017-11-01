@@ -113,8 +113,22 @@ void make_vector(vector<int>& num, const int& n)
     if (n == 0) {num = {0}; return;}
     int a = n;
     while (a > 9) {
-        num.emplace_back(a%10);
-        a /= 10;
+        num.emplace_back(a%sys);
+        a /= sys;
+    }
+    num.emplace_back(a);
+}
+
+void make_vector_base(vector<int>& num, const int& n, const int& base)
+{
+    if (n < 0) throw("\n Negative number passed to make_vector_base function!\n");
+    if (base < 2) throw("\n Negative base! Cannot convert number!\n");
+    num.resize(0);
+    if (n == 0) {num = {0}; return;}
+    int a = n;
+    while (a > 9) {
+        num.emplace_back(a%base);
+        a /= base;
     }
     num.emplace_back(a);
 }
@@ -123,17 +137,58 @@ void cut_zeroes(vector<int>& num)
 {
     int l = num.size();
     if (l == 0) return;
-    while (num[l - 1] == 0) {
+    while (num[l - 1] == 0) { // && l>0
         num.resize(l - 1);
         l--;
     }
+}
+
+void cut_zeroes_back(vector<int>& num)
+{
+    if (num.size() == 0) return;
+    while (num[0] == 0 && num.size()>0) { // && l>0
+        num.erase(num.begin());
+    }
+}
+
+vector<int> cut_last(vector<int> num, const int& k)
+{
+    if (k > num.size()) throw("\n Cannot cut more digits than vector size!\n");
+    if (k <= 0) throw("\n Number of digits to cut has to be a positive number!\n");
+    for (int i = 0; i < k; ++i){
+        num.erase(num.begin());
+    }
+    return num;
+}
+
+vector<int> take_first(vector<int>& num, const int& k)
+{
+    if (k > num.size()) throw("\n Cannot take more digits than vector size!\n");
+    if (k <= 0) throw("\n Number of digits to take has to be a positive number!\n");
+    vector<int> res;
+    int n = num.size();
+    for (int i = 0; i < k; ++i){
+        res.emplace_back(num[n-i-1]);
+    }
+    return res;
+}
+
+vector<int> take_last(vector<int>& num, const int& k)
+{
+    if (k > num.size()) throw("\n Cannot take more digits than vector size!\n");
+    if (k <= 0) throw("\n Number of digits to take has to be a positive number!\n");
+    vector<int> res;
+    for (int i = 0; i < k; ++i){
+        res.emplace_back(num[i]);
+    }
+    return res;
 }
 
 int get_int(const vector<int>& num)
 {
     vector<int> a = num;
     cut_zeroes(a);
-    if (a.size() > 10) throw("\n Too large number to convert!\n");
+    //if (a.size() > sys) throw("\n Too large number to convert!\n");
     if (a.size() == 0) return 0;
     int r = 0, l = num.size(), b = 1;
     for (int i = 0; i < l; ++i) {
@@ -145,12 +200,51 @@ int get_int(const vector<int>& num)
 }
 
 
+int get_int_base(const vector<int>& num, const int base)
+{
+    vector<int> a = num;
+    cut_zeroes(a);
+    //if (a.size() > base) throw("\n Too large number to convert!\n");
+    if (a.size() == 0) return 0;
+    int r = 0, l = num.size(), b = 1;
+    for (int i = 0; i < l; ++i) {
+        //r += (num[i] * pow(sys, i));
+        r += (num[i] * b);
+        b *= base;
+    }
+    return r;
+}
+
 void make_equal_sizes(vector<int>& n1, vector<int>& n2)
 {
     int longer = n1.size();
     if (longer < n2.size()) longer = n2.size();
     add_zeroes(n1, longer - n1.size());
     add_zeroes(n2, longer - n2.size());
+}
+
+void make_equal_sizes_back(vector<int>& n1, vector<int>& n2)
+{
+    int longer = n1.size();
+    if (longer < n2.size()) longer = n2.size();
+    multiply_by_base_power(n1, longer - n1.size());
+    multiply_by_base_power(n2, longer - n2.size());
+}
+
+vector<int> merge_i_and_f(const vector<int>& i, const vector<int>& f)
+{
+    vector<int> num;
+    int k = 0, l_i = i.size(), l_f = f.size();
+    while (k < l_f) {
+        num.emplace_back(f[k]);
+        ++k;
+    }
+    k = 0;
+    while (k < l_i) {
+        num.emplace_back(i[k]);
+        ++k;
+    }
+    return num;
 }
 
 int compare_vectors(const vector<int>& num1, const vector<int>& num2)
@@ -237,7 +331,7 @@ vector<int> get_modulo_int(vector<int> a, const int& b) // returns a mod b = a %
 bool get_mod_two(const vector<int>& a)
 {
     if (a.size() == 0) return true;
-    return (a[0] % 2);
+    return ((a[0] * sys) % 2);
 }
 
 void increase_by_one(vector<int>& a)
@@ -252,7 +346,7 @@ vector<int> multiply_by_digit(vector<int> a, const int& k)
     vector<int> res{0};
     if (a.size() == 0 || k == 0) {return res;}
     if (k == 1) return a;
-    if (k >= 9 || k < 0) throw("\n Not a digit passed!\n"); // 9 = 10 - 1 = sys -1 as k < sys
+    if (k >= (sys-1) || k < 0) throw("\n Not a digit passed!\n"); // 9 = 10 - 1 = sys -1 as k < sys
     res.resize(0);
     int len = a.size(), i = 0, b = 0;
     while (i < len) {
@@ -265,7 +359,15 @@ vector<int> multiply_by_digit(vector<int> a, const int& k)
     return res;
 }
 
+vector<int> GCD(vector<int> a, vector<int> b)
+{
+	if (b.size() == 0)
+		return a;
+	else
+		return GCD(b, get_modulo(a, b));
+}
 
+/*
 vector<base> fft(const vector<base> & num, bool invert) // returns values of (n-1)-degree polynomial in n points of (-1)^(1/n)
 {
     vector<base> a = num;
@@ -292,6 +394,32 @@ vector<base> fft(const vector<base> & num, bool invert) // returns values of (n-
 
     return a;
 }
+*/
 
+
+//
+void fft (vector<complex<double>> &a, bool invert) {/// вместо >> был какой-то символ
+  int n = (int) a.size();
+  if (n == 1)  return;
+
+  vector<complex<double>> a0 (n/2),  a1 (n/2);///тут тоже
+  for (int i=0, j=0; i<n; i+=2, ++j) {
+    a0[j] = a[i];
+    a1[j] = a[i+1];
+  }
+  fft (a0, invert);
+  fft (a1, invert);
+
+  double ang = 2*M_PI/n * (invert ? -1 : 1);
+  complex<double> w (1),  wn (cos(ang), sin(ang));
+  for (int i=0; i<n/2; ++i) {
+    a[i] = a0[i] + w * a1[i];
+    a[i+n/2] = a0[i] - w * a1[i];
+    if (invert)
+      a[i] /= 2,  a[i+n/2] /= 2;
+    w *= wn;
+  }
+}
+//
 
 #endif // HELP_HAND_H_INCLUDED

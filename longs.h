@@ -5,7 +5,7 @@
 
 class LongNums
 {
-private:
+protected:
     static const int sys = 10;
     int len;
 
@@ -25,7 +25,8 @@ public:
     bool operator ==(const LongNums& other)const;
     LongNums& operator +(const LongNums& other)const;
     LongNums& operator -(const LongNums& other)const;
-    LongNums& karatsuba(const LongNums& other)const;
+    //LongNums& operator *(const LongNums& other)const;
+
     //LongNums& get_time((*f), const LongNums& other)const;
 };
 

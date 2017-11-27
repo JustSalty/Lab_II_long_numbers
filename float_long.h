@@ -5,16 +5,23 @@
 //#include "help_hand.h"
 #include "algos.h"
 
+/// 02.11.17 - changed operator '=' to return not FloatLong&, but but
+/// 02.11.17 - changed back but added 'return (*this);'
+/// 02.11.17 - changed operators '+', '-', '*', '<<', and others, return type from FloatLong& to FloatLong
+
+const int base_sys = 2;/// dublicates FloatLong::sys
+
 class FloatLong// : public LongNums
 {
 private:
-    static const int sys = 10;
+    static const int sys = 2;
     int len, i_s, f_s;
     int digits_after_dot;
 
 public:
     vector<int> i_num;
     vector<int> i_part, f_part;
+    bool is_int = false;
     //vector<char> c_num;
     //Multer *m;
 
@@ -32,18 +39,18 @@ public:
     void print();
     void update_f(const vector<int>& f_p);
     operator string()const;
-    bool operator <(const FloatLong& other)const;
+    ///bool operator <(const FloatLong& other)const;
     bool operator ==(const FloatLong& other)const;
     FloatLong& operator =(const FloatLong& other);
     ///FloatLong& operator =(FloatLong&& other);
-    FloatLong& operator +(const FloatLong& other)const;
-    FloatLong& operator -(const FloatLong& other)const;
+    FloatLong operator +(const FloatLong& other)const;
+    FloatLong operator -(const FloatLong& other)const;
     //FloatLong& karatsuba(const LongNums& other)const;
-    FloatLong& operator* (const FloatLong& other)const;
+    FloatLong operator* (const FloatLong& other)const;
     ///FloatLong& operator>>(const int& k)const;
-    FloatLong& operator<<(const int& k)const;
-    FloatLong& operator*=(const FloatLong& other);
-    FloatLong& operator+=(const FloatLong& other);
+    FloatLong operator<<(const int& k)const;
+    FloatLong operator*=(const FloatLong& other);
+    FloatLong operator+=(const FloatLong& other);
     ///FloatLong& operator>>=(const int& k);
 };
 
@@ -52,28 +59,22 @@ FloatLong::FloatLong()
     i_num = {0};
     i_part = {0};
     f_part = {0};
-    i_s = 0;
-    f_s = 0;
+    i_s = 1;
+    f_s = 1;
     digits_after_dot = 0;
+    len = 2;
+    is_int = true;
 }
 
-FloatLong::FloatLong(const long long& a):len(get_len(a)), digits_after_dot(0)
+FloatLong::FloatLong(const long long& a):digits_after_dot(0), is_int(true)
 {
     if (a < 0) throw("\n Cannot assign negative value!\n");
-    i_num.resize(len);
-    int j = 1;
-    long long b = a;
-    while (b > 9){
-        int mod = b % 10;
-        b = (b - mod) / 10;
-        i_num[len - j] = mod;
-        ++j;
-    }
-    i_num[len - j] = b;
-    i_part = i_num;
+    make_vector_base(i_part, a, base_sys);
     f_part = {0};
-    i_s = i_num.size();
-    f_s = 0;
+    i_num = merge_i_and_f(i_part, f_part);
+    i_s = i_part.size();
+    f_s = 1;
+    len = i_s + f_s;
 }
 
 void FloatLong::build_with_i_f(const vector<int>& int_p, const vector<int>& frac_p)
@@ -87,7 +88,7 @@ void FloatLong::build_with_i_f(const vector<int>& int_p, const vector<int>& frac
     else {f_part = f_p; digits_after_dot = f_p.size();}
     i_s = i_part.size();
     f_s = f_part.size();
-    if (digits_after_dot == 0) i_num = i_part; else
+    //if (digits_after_dot == 0) i_num = i_part; else
     i_num = merge_i_and_f(i_part, f_part);
     len = i_s + f_s;
 }
@@ -95,6 +96,7 @@ void FloatLong::build_with_i_f(const vector<int>& int_p, const vector<int>& frac
 FloatLong::FloatLong(const vector<int>& int_p, const vector<int>& frac_p)
 {
     this->build_with_i_f(int_p, frac_p);
+    if (f_s == 0) is_int = true;
 }
 
 FloatLong::FloatLong(const double& a, const int& decimals)
@@ -105,25 +107,27 @@ FloatLong::FloatLong(const double& a, const int& decimals)
         i_num = {0};
         i_part = {0};
         f_part = {0};
-        i_s = 0;
-        f_s = 0;
+        i_s = 1;
+        f_s = 1;
         digits_after_dot = 0;
+        is_int = true;
+        len = 2;
+        return;
         ///this -> FloatLong(0);
         /// this->build_with_i_f({0},{0});
     }
     int i = floor(a);
     vector<int> i_p;
-    make_vector_base(i_p, i, 2);
-    double f = a - i;
+    make_vector_base(i_p, i, base_sys);
     if (decimals == 0) {
         i_part = i_p;
         f_part = {0};
+        is_int = true;
         this -> build_with_i_f(i_p, f_part);
     } else {
-    int f_ = (int)(f* pow(10, decimals));///int f_ = (int)( f * pow(10, digits_after_dot) );
-    vector<int> f_p;
-    make_vector_base(f_p, f_, 2);
+    vector<int> f_p = make_float(a, decimals);
     this -> build_with_i_f(i_p, f_p);
+    ///if (f_s == 0) is_int = true;
     }
 }
 
@@ -131,7 +135,14 @@ FloatLong::FloatLong(const vector<int>& number, int digs_after_dot)
 {
     if (digs_after_dot < 0) throw("\n Number cannot have negative number of decimals after dot!\n");
     if (number.size() == 0) {
-
+        i_num = {0};
+        i_part = {0};
+        f_part = {0};
+        i_s = 1;
+        f_s = 1;
+        digits_after_dot = 0;
+        is_int = true;
+        len = 2;
     } else {
     vector<int> i_p, f_p;
     int i = 0;
@@ -146,17 +157,19 @@ FloatLong::FloatLong(const vector<int>& number, int digs_after_dot)
         ++i;
     }
     this -> build_with_i_f(i_p, f_p);
+    if (f_s == 0) is_int = true;
     }
 }
 
 FloatLong::operator string()const{
     std::ostringstream oss;
-    for (int i = 0; i < i_s; ++i){
-        oss<<this->i_part[i_s - i - 1];
+    int ips = i_part.size(), fps = f_part.size();
+    for (int i = 0; i < ips; ++i){
+        oss<<this->i_part[ips - i - 1];
     }
     oss<<'.';
-    for (int i = 0; i < f_s; ++i){
-        oss<<this->f_part[f_s - i - 1];
+    for (int i = 0; i < fps; ++i){
+        oss<<this->f_part[fps - i - 1];
     }
     return oss.str();
 }
@@ -174,6 +187,7 @@ FloatLong& FloatLong::operator =(const FloatLong& other)
     this->i_s = other.i_s;
     this->f_s = other.f_s;
     this->digits_after_dot = other.digits_after_dot;
+    return (*this);
 }
 
 void FloatLong::update_f(const vector<int>& f_p)
@@ -198,7 +212,7 @@ bool FloatLong::operator ==(const FloatLong& other)const
     return 0;
 }
 
-FloatLong& FloatLong::operator+(const FloatLong& other)const
+FloatLong FloatLong::operator+(const FloatLong& other)const
 {
     //vector<int> res_rev; res_rev.resize(0);
     vector<int> n1_i = this->i_part, n1_f = this->f_part, n2_i = other.i_part, n2_f = other.f_part;
@@ -213,7 +227,7 @@ FloatLong& FloatLong::operator+(const FloatLong& other)const
     return res;//(*res_)
 }
 
-FloatLong& FloatLong::operator-(const FloatLong& other)const
+FloatLong FloatLong::operator-(const FloatLong& other)const
 {
     //vector<int> res_rev; res_rev.resize(0);
     vector<int> n1_i = this->i_part, n1_f = this->f_part, n2_i = other.i_part, n2_f = other.f_part;
@@ -228,7 +242,7 @@ FloatLong& FloatLong::operator-(const FloatLong& other)const
     return res;//(*res_)
 }
 
-FloatLong& FloatLong::operator*(const FloatLong& other)const
+FloatLong FloatLong::operator*(const FloatLong& other)const
 {
     vector<int> res_v = karatsuba_algo(this->i_num, other.i_num);
     int digs = this->digits_after_dot + other.digits_after_dot;
@@ -236,7 +250,7 @@ FloatLong& FloatLong::operator*(const FloatLong& other)const
     return res;//(*res_)
 }
 
-FloatLong& FloatLong::operator<<(const int& k)const
+FloatLong FloatLong::operator<<(const int& k)const
 {
     if (k < 0) throw("\n Cannot move by negative value!\n");
     vector<int> num = this->i_num;
@@ -263,13 +277,13 @@ FloatLong& FloatLong::operator>>(const int& k)const
 }
 **/
 
-FloatLong& FloatLong::operator*=(const FloatLong& other)
+FloatLong FloatLong::operator*=(const FloatLong& other)
 {
     (*this) = (*this) * other;
     return (*this);
 }
 
-FloatLong& FloatLong::operator+=(const FloatLong& other)
+FloatLong FloatLong::operator+=(const FloatLong& other)
 {
     (*this) = (*this) + other;
     return (*this);
@@ -283,9 +297,11 @@ FloatLong& FloatLong::operator>>=(const int& k)
 }
 **/
 
+/**
 FloatLong& inverse(const vector<int>& num)
 {
 
 }
+**/
 
 #endif // FLOAT_LONG_H_INCLUDED

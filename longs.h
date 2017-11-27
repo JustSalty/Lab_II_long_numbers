@@ -36,9 +36,9 @@ LongNums::LongNums(const long long& a):len(get_len(a))
     i_num.resize(len);
     int j = 1;
     long long b = a;
-    while (b > 9){
-        int mod = b % 10;
-        b = (b - mod) / 10;
+    while (b >= sys){
+        int mod = b % sys;
+        b = (b - mod) / sys;
         i_num[len - j] = mod;
         ++j;
     }
@@ -62,7 +62,7 @@ LongNums::LongNums(const int& leng, const std::string number)
 
 LongNums::LongNums(const vector<int>& number)
 {
-    int s = number.size(); bool flag = 0;
+    int s = number.size(); //bool flag = 0;
     this->i_num.resize(0);
 
     /*

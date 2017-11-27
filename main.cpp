@@ -14,8 +14,34 @@ using namespace std;
 
 int main00()
 {
+    ///
+    LongNums a(2);
+    FloatLong a_inv = inverse_int(a, 2);
+    a_inv.print();
+    ///
 
-    //**
+    /**
+    vector<int> a = make_float(0.5, 3);
+    print_vector(a);
+    **/
+
+    /**
+    //FloatLong a(2.5, 2);
+    FloatLong a(2), sing(1);
+    FloatLong b = inverse_float_0(a,1);
+    FloatLong c = a * b;// - sing;
+    //LongNums a0(2); FloatLong b0 = inverse_int(a0,2);
+    //a.print();
+    //b.print();
+    c.print();
+
+    cout<<endl;
+    **/
+
+    /** /// All arithmetical operations for class FloatLong test
+    FloatLong a1(2), b1(1.5, 1), c1=a1+b1;
+    c1.print();
+
     FloatLong a(2.1, 2), b(1.5, 1), c(1.0, 0);
     a.print();
     b.print();
@@ -23,11 +49,16 @@ int main00()
     c.print();
     d0.print();
 
-    FloatLong d = a + b; ///e = b + c, f = b - c, g = a - c, a0(2), h = b * a0;
+    FloatLong d = (a + b), e = b + c, f = b - c, g = a - c, a0(2), h = b * a0;
     ///printf("\n %s + %s = %s ", std::string(a).c_str(), std::string(b).c_str(), std::string(d).c_str());
-    ///cout<<"\n "<<string(a)<<" + "<<string(b)<<" = "<<string(d);
+    cout<<"\n "<<string(a)<<" + "<<string(b)<<" = "<<string(d)<<"\n";
+    cout<<"\n "<<string(b)<<" + "<<string(c)<<" = "<<string(e)<<"\n";
+    cout<<"\n "<<string(b)<<" - "<<string(c)<<" = "<<string(f)<<"\n";
+    cout<<"\n "<<string(a)<<" - "<<string(c)<<" = "<<string(g)<<"\n";
+    cout<<"\n "<<string(b)<<" * "<<string(a0)<<" = "<<string(h)<<"\n";
+    cout<<endl;
 
-    //**/
+    **/
 
     /** FloatLong tests for constructors
     vector<int> a{2,1,0}, b{0,1}, c{1,0};

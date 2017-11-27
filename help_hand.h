@@ -20,14 +20,32 @@ using namespace std;
 
 typedef complex<double> base;
 
-const int sys = 10; //try to change those 10 below to sys and see if that works
+const int sys = 2; //try to change those 10 below to sys and see if that works
+
+vector<int> make_float(const double& a, const int& decimals)
+{
+    vector<int> res;
+    int a_int = (int) a;
+    double f = a - a_int;
+    if (decimals == 0 || f == 0) {res = {0}; return res;}
+    double pow = 0.5, x = 0;
+    int i = 1;
+    while (i <= decimals) {
+        if (f == (x + pow)) {res.emplace_back(1); return res;}
+        if (f > (x + pow)) {res.emplace_back(1); x += pow;}
+        else res.emplace_back(0);
+        pow *= 0.5;
+        ++i;
+    }
+    return res;
+}
 
 int get_len(const long long& a)
 {
     int i = 1;
     long long b = a;
-    while (b >= 10) { // 10 = sys
-        b = int (floor(b / 10)); //10 = sys
+    while (b >= sys) { // 10 = sys
+        b = int (floor(b / sys)); //10 = sys
         ++i;
     }
     return i;
@@ -112,23 +130,23 @@ void make_vector(vector<int>& num, const int& n)
     num.resize(0);
     if (n == 0) {num = {0}; return;}
     int a = n;
-    while (a > 9) {
-        num.emplace_back(a%sys);
+    while (a >= sys) {
+        num.emplace_back(a % sys);
         a /= sys;
     }
     num.emplace_back(a);
 }
 
-void make_vector_base(vector<int>& num, const int& n, const int& base)
+void make_vector_base(vector<int>& num, const int& n, const int& n_base)
 {
     if (n < 0) throw("\n Negative number passed to make_vector_base function!\n");
-    if (base < 2) throw("\n Negative base! Cannot convert number!\n");
+    if (n_base < 2) throw("\n Negative base! Cannot convert number!\n");
     num.resize(0);
     if (n == 0) {num = {0}; return;}
     int a = n;
-    while (a > 9) {
-        num.emplace_back(a%base);
-        a /= base;
+    while (a >= n_base) {
+        num.emplace_back(a % n_base);
+        a /= n_base;
     }
     num.emplace_back(a);
 }
@@ -151,6 +169,13 @@ void cut_zeroes_back(vector<int>& num)
     }
 }
 
+vector<int> add_zeroes_back(const vector<int>& num, const int& k)
+{
+    vector<int> res = num;
+    multiply_by_base_power(res, k);
+    return res;
+}
+
 vector<int> cut_last(vector<int> num, const int& k)
 {
     if (k > num.size()) throw("\n Cannot cut more digits than vector size!\n");
@@ -161,7 +186,7 @@ vector<int> cut_last(vector<int> num, const int& k)
     return num;
 }
 
-vector<int> take_first(vector<int>& num, const int& k)
+vector<int> take_first(const vector<int>& num, const int& k)
 {
     if (k > num.size()) throw("\n Cannot take more digits than vector size!\n");
     if (k <= 0) throw("\n Number of digits to take has to be a positive number!\n");
@@ -173,7 +198,7 @@ vector<int> take_first(vector<int>& num, const int& k)
     return res;
 }
 
-vector<int> take_last(vector<int>& num, const int& k)
+vector<int> take_last(const vector<int>& num, const int& k)
 {
     if (k > num.size()) throw("\n Cannot take more digits than vector size!\n");
     if (k <= 0) throw("\n Number of digits to take has to be a positive number!\n");
@@ -182,6 +207,12 @@ vector<int> take_last(vector<int>& num, const int& k)
         res.emplace_back(num[i]);
     }
     return res;
+}
+
+vector<int> make_length(const vector<int>& num, const int& k)
+{
+    if (num.size() >= k) return take_first(num, k);
+    return add_zeroes_back(num, k - num.size());
 }
 
 int get_int(const vector<int>& num)

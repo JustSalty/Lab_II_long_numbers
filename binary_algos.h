@@ -5,6 +5,8 @@
 
 using namespace std;
 
+static const vector<int> zero = {0};
+
 //static const int sys = 2;
 
 int binary_pow_int (int a, int n) {
@@ -73,7 +75,7 @@ bool miller_rabin_bin(vector<int> n, const int& rounds)
         s++; // increase_by_one(s);
     }
 
-    cycleA:
+    ///cycleA:
     for (int i = 0; i < rounds; ++i) {  // <- cycle A - repeat k times
         int a0 = i + 1; //a0 = rand(2, n-2);
         vector<int> a;
@@ -183,9 +185,10 @@ bool solovey_shtrassen_bin (vector<int> p, const int& rounds)
 
 
 
-FloatLong& inverse(const LongNums& num, const int& precision)/// тут для корректной работы надо менять переменную sys в классе Longnums и файле help_hand на 2
+FloatLong inverse_int(const LongNums& num, const int& precision)/// тут для корректной работы надо менять переменную sys в классе Longnums и файле help_hand на 2
 {
     //check if num is 0
+    if (num.i_num == zero) throw("\n Zero has no inverse! (function inverse(LongNums&) )\n");
     vector<int> n1 = num.i_num, i = {0};
     int n_size = n1.size(), n = precision, t = 1;
     while (t < n_size) t *= 2;
@@ -207,19 +210,54 @@ FloatLong& inverse(const LongNums& num, const int& precision)/// тут для коррект
         j *=2 ;/// - кол-во цифр в z -1
         digs = j + 1;/// - кол-во цифр в z
         last_index_in_num_for_V_k = j + 3;
-        z0 = take_first(z0, digs);///обрезка дробной части до (2^(к+1)) знака
+        z0 = make_length(z0, digs);///обрезка дробной части до (2^(к+1)) знака
         z.update_f(z0);
     }
     FloatLong res = z << n_size;
     return res;
 }
 
-FloatLong& division_Cook_bin(const vector<int>& num1, const vector<int>& num2)/// n1 - divisible, n2 - divisor
+FloatLong inverse_float_0(const FloatLong& num, const int& precision)/// тут для корректной работы надо менять переменную sys в классе Longnums и файле help_hand на 2
+{
+    //check if num is 0
+    if (!num.is_int) throw("\n Not an integer passed as an argument to 'inverse' function!\n");
+
+    vector<int> n1 = num.i_part, i = {0};
+    if (n1.size() == 0) throw("\n Zero has no inverse! (function inverse(FloatLong&) )\n");
+    //if (n1 == zero) throw("\n Zero has no inverse! (function inverse(FloatLong&) )\n");
+    int n_size = n1.size(), n = precision, t = 1;
+    while (t < n_size) t *= 2;
+    int T = t + 3;
+    add_zeroes(n1, T-n_size);/// n1 - взяли число n и приписали справа к 0. - оно стало дробной частью - или поделили на соотв степень 2
+    n_size = n1.size();
+    int l = n_size;
+    double z0 = (33 / (4 * n1[l] + 2 * n1[l-1] + n1[l-3] + 1)) / 4;/// начальная инициализация
+    FloatLong z(z0, 2); /// в начале у z есть 2 знака после запятой
+    vector<int> V_k = take_first(n1, 4); /// 4 = (2^(0)+3)
+    int j = 1, digs = 2, k = 0, last_index_in_num_for_V_k = 4;
+    while (j < n){
+        for (int l = 0; l < j; ++l){V_k.emplace_back(n1[n_size - ( last_index_in_num_for_V_k + l + 1) ]);}/// дописываем к V_k несколько знаков из n1
+        /// каждий раз мы дописываем знаки в V_k с (2^k+3) не включ по (2^(k+1)+3) включ - они беруться из n1
+        FloatLong v(i, V_k);
+        z = (z << 1) - ((v*z)*z);
+        vector<int> z0 = z.f_part;
+        k++;/// - номер итерации
+        j *=2 ;/// - кол-во цифр в z -1
+        digs = j + 1;/// - кол-во цифр в z
+        last_index_in_num_for_V_k = j + 3;
+        z0 = make_length(z0, digs);///обрезка дробной части до (2^(к+1)) знака   /// <<--- BUG!!!
+        z.update_f(z0);
+    }
+    FloatLong res = z << n_size;
+    return res;
+}
+
+FloatLong division_Cook_bin(const vector<int>& num1, const vector<int>& num2)/// n1 - divisible, n2 - divisor
 {
     FloatLong n1(num1, {0});
     int precision = num1.size()+1;
     LongNums n2_0(num2);
-    FloatLong n2 = inverse(n2_0, precision);
+    FloatLong n2 = inverse_int(n2_0, precision);
     FloatLong res = n1 * n2;
     return res;
 }

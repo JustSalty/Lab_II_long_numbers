@@ -12,8 +12,10 @@ vector<int> subtract_vectors(const vector<int>& num1, const vector<int>& num2)
     if (compare_vectors(num1, num2) == -1) throw("\n Cannot subtract vectors!\n");
     int perenos = 0, curr_sum = 0, leng = 0;
     vector<int> bigger = num1, smaller = num2;
+    /**
     LongNums n1(num1), n2(num2);
     if (n1 < n2) {bigger = num2; smaller = num1;}
+    **/
     int big_len = bigger.size(), smal_len = smaller.size();
     vector<int> res_rev; res_rev.resize(0);
     add_zeroes(smaller, big_len - smal_len);
